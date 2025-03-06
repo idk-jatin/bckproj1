@@ -41,6 +41,27 @@ app.get("/user", async (req, res) => {
     }
   });
 
+  app.delete("/user", async (req, res) => {
+    try {
+      const user = await User.findByIdAndDelete(req.body.userId);
+        res.send(`user ${user.firstName} deleted`);
+      }
+    catch (error) {
+      res.status(400).send("error deleting in dbase:" + error.message);
+    }
+  });
+
+
+app.patch("/user", async (req,res) =>{
+  try {
+    await User.findByIdAndUpdate(req.body.userId,req.body,{returnDocument:'before'});
+    res.send("User updated succesfully");
+  } catch (error) {
+    res.status(400).send("error updating in dbase:" + error.message);
+  }
+});
+
+
 connectdb()
   .then(() => {
     console.log("connection successfull");
