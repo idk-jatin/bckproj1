@@ -15,18 +15,31 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.get("/user", async (req, res) => {
+app.get("/feed", async (req, res) => {
   try {
-    const user = await User.find({});
-    if (user.length === 0) {
-      res.status(404).send("user not found");
+    const users = await User.find({});
+    if (users.length === 0) {
+      res.status(404).send("users not found");
     } else {
-      res.send(user);
+      res.send(users);
     }
   } catch (error) {
-    res.status(400).send("error saving in dbase:" + error.message);
+    res.status(400).send("error finding in dbase:" + error.message);
   }
 });
+
+app.get("/user", async (req, res) => {
+    try {
+      const user = await User.find({emailId: req.body.emailId});
+      if (user.length === 0) {
+        res.status(404).send("user not found");
+      } else {
+        res.send(user);
+      }
+    } catch (error) {
+      res.status(400).send("error finding in dbase:" + error.message);
+    }
+  });
 
 connectdb()
   .then(() => {
