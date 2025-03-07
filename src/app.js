@@ -54,7 +54,7 @@ app.get("/user", async (req, res) => {
 
 app.patch("/user", async (req,res) =>{
   try {
-    await User.findByIdAndUpdate(req.body.userId,req.body,{returnDocument:'before'});
+    await User.findByIdAndUpdate(req.body.userId,req.body,{returnDocument:'before',runValidators:true});
     res.send("User updated succesfully");
   } catch (error) {
     res.status(400).send("error updating in dbase:" + error.message);
