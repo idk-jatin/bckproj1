@@ -2,11 +2,14 @@ const express = require("express");
 const app = express();
 const connectdb = require("./config/database");
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser')
+const jwt = require('jsonwebtoken');
 const User = require("./models/user");
 const {validateSignupData}  = require("./utils/validation.js");
+const {userAuth} = require('./middlewares/auth');
 
 app.use(express.json());
-
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
   
@@ -38,14 +41,24 @@ app.post("/login", async (req, res) => {
       throw new Error("Invalid Credentials");
     }
     else{
+    const token = jwt.sign({_id:user._id},"dev_8tind@r");
+    res.cookie("token",token);
       res.send('Login Successfull');
-      
     }
   } catch (error) {
     res.status(400).send("Error : " + error.message);
   }
 });
 
+
+app.get("/profile",userAuth,async (req, res) => {
+  try {
+      const user = req.user;
+      res.send(user);
+  } catch (error) {
+    res.status(400).send("Error : " + error.message);
+  }
+});
 
 app.get("/feed", async (req, res) => {
   try {
