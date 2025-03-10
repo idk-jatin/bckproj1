@@ -7,16 +7,16 @@ const userAuth = async(req,res,next)=>{
         if(!token){
             throw new Error("Token not valid!!");
         }
-        const decodedObj = jwt.verify(token,"dev_8tind@r");
+        const decodedObj = await jwt.verify(token,"dev_8tind@r");
         const {_id} = decodedObj;
-        const user = User.findById(_id);
+        const user = await User.findById(_id);
         if(!user){
             throw new Error("User Not Found");
         }
         req.user = user;
         next();
     } catch (error) {
-        res.status(400).JSON({"ERROR: ": error.message});
+        res.status(400).send("ERROR: " + error.message);
     }
 }
 
