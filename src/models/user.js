@@ -36,7 +36,6 @@ const userSchema = new mongoose.Schema({
         type:Number,
         min:18,
         max:100,
-        trim:true
     },
     gender:{
         type:String,
@@ -60,6 +59,7 @@ const userSchema = new mongoose.Schema({
     skills:{
         type:[String],
         lowercase:true,
+        length:10,
         set: skills => Array.from(new Set(skills.map(skill => skill.toLowerCase())))
     }
 },{
@@ -68,7 +68,7 @@ const userSchema = new mongoose.Schema({
 
 userSchema.methods.getJWT = async function() {
    const user = this;
-    const token = await jwt.sign({_id:user._id},"dev_8tind@r",{expiresIn:"7d"});
+    const token = jwt.sign({_id:user._id},"dev_8tind@r",{expiresIn:"7d"});
     return token;
 }
 userSchema.methods.validatePassword = async function(userInputPassword){
