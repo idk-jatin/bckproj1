@@ -23,7 +23,7 @@ try {
       req.toUser = toUser;
       next();
 } catch (err) {
-    res.status(400).json({Error : err.message});
+   return res.status(400).json({Error : err.message});
 }}
 
 const existingConnection=async(req,res,next)=>{
@@ -31,21 +31,39 @@ const existingConnection=async(req,res,next)=>{
         const fromUserId = req.user._id;
         const  toUserId = req.params.toUserId;
 
-        const existingConnection = await Connection.findOne({
-            fromUserId,
-            toUserId,
-            status: { $in: ["interested", "matched"] },
+        const existingconnection = await Connection.findOne({
+          $or: [
+            { fromUserId, toUserId },
+            { fromUserId: toUserId, toUserId: fromUserId },
+          ],
           });
-          
-          if (existingConnection) {
-            return res.status(400).json({ Error: "Connection request already exist!" });
-          }
+          if (existingconnection) {
+            if ((existingconnection.status === "ignored" )&& existingconnection.toUserId.toString() === fromUserId.toString()) {
+                return res.status(400).json({ Error: "Connection Declined!!" });
+            }
+
+            if (existingconnection.fromUserId.toString() === fromUserId.toString()) {
+                return res.status(400).json({ Error: "Connection request already exists!"});
+            }
+
+            if (
+              existingConnection.status === "pending" || 
+              existingConnection.status === "interested" ||
+              existingConnection.status === "matched" ||
+              existingConnection.status === "accepted"
+            ) {
+              return res.status(400).json({ 
+                error: "A connection already exists between both users" 
+              });
+            }
+
+        }
           next();
     } catch (err) {
-        res.status(400).json({Error : err.message});
+        return res.status(400).json({Error : err.message});
     }}
 
-const matchStatus=async(req,res,next)=>{
+const pendingStatus=async(req,res,next)=>{
         try {
             const fromUserId = req.user._id;
             const  toUserId = req.params.toUserId;
@@ -60,19 +78,19 @@ const matchStatus=async(req,res,next)=>{
               if (reverseConnection && status === "interested") {
                 await Connection.findOneAndUpdate(
                   { fromUserId, toUserId },
-                  { $set: { status: "matched" } }, 
+                  { $set: { status: "pending" } }, 
                   { upsert: true, new: true }
                 );
         
                 await Connection.findOneAndUpdate(
                   { fromUserId: toUserId, toUserId: fromUserId },
-                  { $set: { status: "matched" } }
+                  { $set: { status: "pending" } }
                 );
-                req.isMatch = true;
+                req.isPending = true;
               }
               next();
         } catch (err) {
-            res.status(400).json({Error : err.message});
+           return res.status(400).json({Error : err.message});
         }}
 
-        module.exports = {validateRequest,existingConnection,matchStatus};
+        module.exports = {validateRequest,existingConnection,pendingStatus};
