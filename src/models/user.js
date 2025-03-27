@@ -51,6 +51,29 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
+    likes :{
+        type: Number,
+        min:0,
+        default: 0
+    },
+    experience: {
+        type: String,
+        enum: ['Student', 'Entry', 'Junior', 'Intermediate', 'Senior', 'Lead'],
+        default: 'Entry'
+    },
+    githubUsername: {
+        type: String,
+        trim: true,
+        lowercase: true
+    },
+    linkedinProfile: {
+        type: String,
+        validate(value) {
+            if (value && !validator.isURL(value)) {
+                throw new Error('Not a valid linkedin Url');
+            }
+        }
+    },
     about:{
         type:String,
         default:"This is the default about of the user.",
@@ -59,7 +82,10 @@ const userSchema = new mongoose.Schema({
     skills:{
         type:[String],
         lowercase:true,
-        length:10,
+        validate: {
+            validator: (skills) => skills.length <= 10,
+            message: "max of 10 skills can be added!"
+        },
         set: skills => Array.from(new Set(skills.map(skill => skill.toLowerCase())))
     }
 },{

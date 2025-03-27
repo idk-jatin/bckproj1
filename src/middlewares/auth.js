@@ -11,11 +11,13 @@ const userAuth = async(req,res,next)=>{
         const {_id} = decodedObj;
         const user = await User.findById(_id);
         if(!user){
+            res.clearCookie("token");
             throw new Error("User Not Found");
         }
         req.user = user;
         next();
     } catch (error) {
+        res.clearCookie("token");
         res.status(400).send("ERROR: " + error.message);
     }
 }

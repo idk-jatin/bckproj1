@@ -38,7 +38,7 @@ const existingConnection=async(req,res,next)=>{
           ],
           });
           if (existingconnection) {
-            if ((existingconnection.status === "ignored" )&& existingconnection.toUserId.toString() === fromUserId.toString()) {
+            if (existingconnection.status === "ignored" && existingconnection.toUserId.toString() === fromUserId.toString()) {
                 return res.status(400).json({ Error: "Connection Declined!!" });
             }
 
@@ -46,12 +46,7 @@ const existingConnection=async(req,res,next)=>{
                 return res.status(400).json({ Error: "Connection request already exists!"});
             }
 
-            if (
-              existingConnection.status === "pending" || 
-              existingConnection.status === "interested" ||
-              existingConnection.status === "matched" ||
-              existingConnection.status === "accepted"
-            ) {
+            if (["pending","interested","matched","accepted"].includes(existingConnection.status)) {
               return res.status(400).json({ 
                 error: "A connection already exists between both users" 
               });

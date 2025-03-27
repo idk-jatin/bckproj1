@@ -9,7 +9,7 @@ const {validateSignupData}  = require("../utils/validation");
 authRouter.post("/signup", async (req, res) => {
     try {
       //validn of data
-      validateSignupData(req);
+      await validateSignupData(req.body);
       // pass encryption
       const {firstName, lastName, emailId, password} = req.body;
       const hashedPass = await bcrypt.hash(password,10);

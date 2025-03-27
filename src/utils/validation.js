@@ -1,9 +1,12 @@
 const validator = require("validator");
+const User = require("../models/user");
 
-const validateSignupData = (req) => {
-  const { firstName, lastName, emailId, password } = req.body;
+const validateSignupData = async(data) => {
+  const { firstName, lastName, emailId, password } = data;
   let errors = [];
-
+  if(await User.findOne({emailId : emailId})){
+    errors.push("User Exists!");
+  }
   if (!firstName || firstName.length < 3 || firstName.length > 40) {
     errors.push("First Name should be between 3-40 characters.");
   }
@@ -26,7 +29,7 @@ const validateSignupData = (req) => {
 
 const validateProfileData = (req)=>{
   let errors = [];
-  const validFields = ["firstName","lastName","age","about","photoUrl","gender","skills"]
+  const validFields = ["firstName","lastName","age","about","photoUrl","gender","skills","experience","githubUsername","linkedinProfile"]
   const isDataValid = Object.keys(req.body).every(field => validFields.includes(field));
   if(!isDataValid) errors.push("Invalid Edit Fields!!");
 
@@ -48,6 +51,19 @@ const validateProfileData = (req)=>{
   if(req.body.skills && (!Array.isArray(req.body.skills) || req.body.skills.length > 10)){
     errors.push("Skills can be maximum 10");
   }
+
+  if (req.body.experience && !["Student", "Entry", "Junior", "Intermediate", "Senior", "Lead"].includes(req.body.experience)) {
+    errors.push("Experience can be - Student, Entry, Junior, Intermediate, Senior, Lead");
+  }
+
+  if (req.body.githubUsername && !/^[a-z0-9-]+$/.test(req.body.githubUsername)) {
+    errors.push("Github username is not valid");
+  }
+
+  if (req.body.linkedinProfile && !validator.isURL(req.body.linkedinProfile)) {
+    errors.push("linkedin profile not a valid Url");
+  }
+
   if (errors.length >0){
     throw new Error(errors.join(' | '));
   }
