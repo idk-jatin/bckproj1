@@ -16,9 +16,9 @@ authRouter.post("/signup", async (req, res) => {
       // creating a user instance of User model and saving in db
       const user = new User({firstName, lastName, emailId, password:hashedPass});
       await user.save({runValidators:true});
-      res.send("User added succesfully!!");
+      res.json({ message: "User added successfully!" });
     } catch (error) {
-      res.status(400).send("Error : " + error.message);
+      res.status(400).json({ error: error.message });
     }
   });
 
@@ -26,9 +26,13 @@ authRouter.post("/signup", async (req, res) => {
   
     try {
       const {emailId,password} = req.body;
+
+      if (!emailId || !password) {
+        return res.status(400).json({ error: "Email/Password is required!" });
+      }
       const user = await User.findOne({emailId: emailId});
       if(!user){
-        throw new Error("Invalid Credential");
+        throw new Error("Invalid Credentials");
       }
       const isPassValid = await user.validatePassword(password);
   
@@ -41,10 +45,10 @@ authRouter.post("/signup", async (req, res) => {
       res.cookie("token",token,{
         expires:new Date(Date.now() + 7*24*3600000)
       });
-        res.send('Login Successfull');
+      res.json({ message: "Login successful"});
       }
     } catch (error) {
-      res.status(400).send("Error : " + error.message);
+      res.status(400).json({ error: error.message });
     }
   });
 

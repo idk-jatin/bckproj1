@@ -92,9 +92,18 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
+userSchema.pre('save', async function (next) {
+    const user = this;
+    if (user.isModified('password')) {
+        user.password = await bcrypt.hash(user.password, 8);
+    }
+
+    next();
+});
+  
 userSchema.methods.getJWT = async function() {
    const user = this;
-    const token = jwt.sign({_id:user._id},"dev_8tind@r",{expiresIn:"7d"});
+    const token = jwt.sign({_id:user._id},process.env.JWT_SECRET,{expiresIn:"7d"});
     return token;
 }
 userSchema.methods.validatePassword = async function(userInputPassword){

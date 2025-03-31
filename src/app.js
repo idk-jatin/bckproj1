@@ -1,7 +1,11 @@
+require('dotenv').config();
+
 const express = require("express");
 const app = express();
 const connectdb = require("./config/database");
 const cookieParser = require('cookie-parser');
+
+const PORT = process.env.PORT || 7777;
 
 app.use(express.json());
 app.use(cookieParser());
@@ -20,7 +24,7 @@ app.use("/",userRouter)
 connectdb()
   .then(() => {
     console.log("connection successfull");
-    app.listen(7777, () => {
+    app.listen(PORT, () => {
       console.log("listening bro");
     });
   })
