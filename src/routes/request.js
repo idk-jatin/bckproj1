@@ -28,7 +28,7 @@ requestRouter.post("/request/send/:status/:toUserId",
         message: "Request sent successfully!",
       });
     } catch (err) {
-      res.status(400).json({ Error: err.message });
+      res.status(400).json({ error: err.message });
     }
   }
 );
@@ -39,7 +39,7 @@ requestRouter.post("/request/review/:status/:requestId", userAuth, async (req, r
       const { status, requestId } = req.params;
       const validStatus = ["accepted", "rejected"];
       if (!validStatus.includes(status)) {
-          return res.status(400).json({ Error: "Not a valid status!!" });
+          return res.status(400).json({ error: "Not a valid status!!" });
       }
       const connectionRequest = await Connection.findById(requestId);
 
@@ -84,7 +84,7 @@ requestRouter.post("/request/review/:status/:requestId", userAuth, async (req, r
       res.json({ Message: "Request Processed Successfully!!", connectionRequest });
 
   } catch (err) {
-      res.status(500).json({ Error: err.message });
+      res.status(500).json({ error: err.message });
   }
 });
 module.exports = requestRouter;

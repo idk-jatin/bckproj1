@@ -27,11 +27,21 @@ const connectionSchema = new mongoose.Schema(
       default: "interested",
       required: true,
     },
+    liked:{
+      type: Boolean,
+      default: false
+    }
   },
   { timestamps: true }
 );
 
-// Compound index mongoose
+connectionSchema.pre('save', function (next) {
+  if (this.liked === true) {
+    return next(new Error("Already likes this user!"));
+  }
+  next();
+});
+// compound index mongoose
 connectionSchema.index({ fromUserId: 1, toUserId: 1 }, { unique: true });
 
 const connectionModel = mongoose.model("Connection", connectionSchema);

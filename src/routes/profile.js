@@ -1,15 +1,18 @@
 const express = require('express');
 const profileRouter = express.Router();
+const fs = require("fs");
 const {userAuth} = require('../middlewares/auth');
 const {validateProfileData} = require('../utils/validation')
 const bcrypt = require('bcrypt');
-const User = require('../models/user');
-const validator = require('validator')
+const validator = require('validator');
+const Image = require("../models/images");
+const {uploadToCloudinary} = require("../utils/imageUpload")
+const upload = require("../middlewares/multer");
 
 profileRouter.get("/profile/view",userAuth,async (req, res) => {
     try {
       const {firstName,lastName,age,gender,about,skills,likes,experience,githubUsername,linkedinProfile} = req.user;
-      res.send({firstName,lastName,age,gender,about,skills,likes,experience,githubUsername,linkedinProfile});
+      res.json({profile : [firstName,lastName,age,gender,about,skills,likes,experience,githubUsername,linkedinProfile]});
     } catch (error) {
       res.status(400).send("Error : " + error.message);
     }
@@ -26,7 +29,6 @@ profileRouter.patch("/profile/edit",userAuth,async (req,res)=>{
   } catch (err) {
     res.status(400).send("Error : " + err.message);
   }
-
 });
 
 profileRouter.patch("/profile/edit/password",userAuth,async (req,res)=>{
@@ -54,7 +56,52 @@ profileRouter.patch("/profile/edit/password",userAuth,async (req,res)=>{
   }
 });
 
+profileRouter.put("/profile/edit/upload",userAuth,upload.single('image'),async(req,res)=>{
+  try {
+    const loggedInUser = req.user;
+    if(!req.file){
+      return res.status(400).json({
+        message:"File is required. Please upload an image"
+      })
+    }
+   
+    const {url,publicId} = await uploadToCloudinary(req.file.path)
+   
+    const newlyUploadedImage = new Image({
+      url,
+      publicId,
+      uploadedBy: loggedInUser._id,
+    });
+    
+    loggedInUser.photoUrl = url;
+    await loggedInUser.save();
+    await newlyUploadedImage.save();
 
+    fs.unlink(req.file.path, (err) => {
+      if (err) {
+        console.error("Error deleting upload file:", err);
+      } else {
+        console.log("Upload file deleted:", req.file.path);
+      }
+    });
+   
+
+    return res.status(201).json({
+      message: "Image uploaded successfully",
+      image: {
+        url,
+        id: newlyUploadedImage._id,
+      },
+    });
+
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Error Updating Profile Picture"
+    })
+  }
+});
 
   module.exports = profileRouter;
   

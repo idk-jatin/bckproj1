@@ -65,7 +65,7 @@ userRouter.post("/user/like/:userId",userAuth,async (req,res) => {
        
           const [toUser, connection] = await Promise.all([
             User.findById(toUserId),
-            Connection.findOne({
+            Connection.findOneAndUpdate({
               $or: [
                 { fromUserId: loggedInUserId, toUserId: toUserId, status: "matched" },
                 { toUserId: loggedInUserId, fromUserId: toUserId, status: "matched" },
@@ -80,8 +80,17 @@ userRouter.post("/user/like/:userId",userAuth,async (req,res) => {
         if(!connection){
             return res.status(404).json({error : "Connection not found"});
         }
+
+        if(connection.liked){
+            return res.status(400).json({ error: "Already liked this user!"});
+        }
+
+        connection.liked = true;
+        await connection.save();
+
         toUser.likes = (toUser.likes || 0) + 1;
        await toUser.save();
+
        res.json({message : `You liked ${toUser.firstName} <3`})
     } catch (err) {
         res.status(500).json({error: err.message})

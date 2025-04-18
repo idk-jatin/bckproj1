@@ -23,7 +23,7 @@ const getConnectedIds = async (currUserId) => {
     });
     return [...ids];
   } catch (err) {
-    throw new Error(" Failed to fetch existing connections!");
+    throw new Error("Failed to fetch existing connections!");
   }
 };
 
@@ -44,7 +44,7 @@ const getSkillsPoint =  (probFeedUsers, currUserSkills) => {
     });
     return updFeedUsersData;
   } catch (err) {
-    throw new Error("Point calc error!!");
+    throw new Error("Point calc error!");
   }
 };
 
@@ -86,7 +86,7 @@ const getLikesPoint = (probFeedUsers) => {
         });
         return newProbFeedUsers;
     } catch (err) {
-      throw new Error("Point calc error");
+      throw new Error("Point calc error!");
     }
 }
 
